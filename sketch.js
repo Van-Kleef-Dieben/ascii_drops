@@ -274,7 +274,7 @@ function draw() {
 				if (food > 0 ) {
 					point.letter = "█"	
 					point.class = "food"
-					point.color = color(100, 100, 100)
+					point.color = color(150, 100, 100)
 
 					{
 						point.age = min(maxAge, (point.age * 2 + food)/  3 )
