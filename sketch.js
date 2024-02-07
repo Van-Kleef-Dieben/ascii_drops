@@ -4,13 +4,12 @@ let sizeX
 let sizeY
 let maxAge = 255
 
-
-
 let direction = false
 let string = "VAN KLEEF-DIEBEN"
+let font = "iA Writer Mono"
 
 const dX = 15
-const dY = 20
+const dY = 23
 
 function setup() {
 
@@ -18,7 +17,7 @@ function setup() {
 	let h = 400
 
 	createCanvas(w, h);
-	textFont("ia")
+	textFont(font)
 	textStyle("bold")
 	textSize(20)
 	textAlign(CENTER, TOP)
@@ -29,29 +28,51 @@ function setup() {
 	for (let i = 0; i < sizeX; i++) 
 	{
 		grid[i] = []
-		for (let j = 0; j < sizeX; j++) 
+		for (let j = 0; j < sizeY; j++) 
 		{
 			grid[i][j] = { letter: null, age: 0 }
 		}
 	}
 
-	vkd(40, 10)
+	vkd((sizeX / 2 - string.length / 2)| 0, sizeY / 2 | 0 )
 }
 
 function vkd(x, y)
 {
 	let s = string
+	let v 
+	let max
 	
 	direction = !direction
 
+	if (direction)
+	{
+		v = x
+		max = sizeX
+	}
+	else
+	{
+		v = y
+		max = sizeY
+	}
+
 	for (let i = 0; i < s.length; i++) {
 
-		if ((direction ? x : y) + i >= (direction ? sizeX : sizeY))
+		if (v + i >= max)
 		{
 			continue
 		}
 
-		grid[x + (direction ? i : 0)][y + (direction ? 0 : i)] = { letter: s[i], age: 300, color: color("#444"), count: 4, class: "source" }
+		if (direction)
+		{
+			grid[x + i][y] = { letter: s[i], age: 300, color: color("#444"), count: 4, class: "source" }
+		
+		}
+		else
+		{
+			grid[x][y + i] = { letter: s[i], age: 300, color: color("#444"), count: 4, class: "source" }
+		}
+
 		
 	}
 }
@@ -117,38 +138,8 @@ function calculateFood(x, y)
 	return food
 }
 
-// function distanceToClass(c, x, y)
-// {
-// 	let d = -1
-
-// 	for (let i = 0; i < sizeX; i++) 
-// 	{
-// 		for (let j = 0; j < sizeY; j++)
-// 		{
-// 			if (i < 0 || i >= sizeX || j < 0 || j >= sizeY)
-// 			{
-// 				continue;
-// 			}
-
-// 			if (grid[i][j].class !== c)
-// 			{
-// 				continue
-// 			}
-
-// 			let dd = Math.sqrt((x - i) * (x - i) + (y - j) * (y - j)) | 0
-
-// 			if (dd < d || d === -1)
-// 			{
-// 				d = dd
-// 			}
-// 		}
-// 	}
-
-// 	return d
-// }
-
 function draw() {
-	// background(220);
+	
 	clear()
 	for (let i = 0; i < sizeX; i++) 
 	{
@@ -163,7 +154,7 @@ function draw() {
 
 				if (grid[i][j].class === "food")
 				{
-					let chars = [ "░",  "▒", "▓",  "█", ]
+					let chars = [ "░",  "▒", "▓",  "█", ".", ]
 					grid[i][j].letter = chars[(grid[i][j].age / maxAge * chars.length | 0)]
 				}
 				
@@ -179,70 +170,37 @@ function draw() {
 					
 				}
 
-				if (random() * 200 > 150)
-				{
+				//if (random() * 200 > 150)
+				//{
 					grid[i][j].age--
-				}
-				// grid[i][j].age -= (d !== -1 ? d : 10)
+				//}
 
 				if (grid[i][j].age < 0)
 				{
 					grid[i][j].letter = null
 				}
 
-				// if (random() * 1000 > 990)
-				// {
-				// 	let found = false
-				// 	let x
-				// 	let y
-
-				// 	for ( x = i - 3; x < i + 3; x++)
-				// 	{
-				// 		for ( y = j - 3; y < j + 3; y++)
-				// 		{
-				// 			if (x < 0 || x > sizeX || y < 0 || y > sizeY || grid[x][y].letter !== null) 
-				// 			{
-				// 				continue
-				// 			}
-
-				// 			found = true;
-				// 			break;
-				// 		}
-
-				// 		if (found)
-				// 		{
-				// 			break;
-				// 		}
-				// 	}
-
-				// 	if (found) 
-				// 	{
-				// 		grid[x][y] = { letter: random().toString(36).substring(2, 3), age: 255, color: color(150, 200, 100), count: 1 }
-				// 	}
-				// }
 			}
 			
 			else 
 			{
-				if (random() * 100000 > 99500)
-				{
-					let food = calculateFood(i, j);
-					if (food > 100) {
-						grid[i][j] = { 
-							// letter: random().toString(36).substring(2, 3), 
-							letter: ".",
-							age: min(food * random() * 1.1, maxAge), 
-							color: color(200, 128, 128),
-							class: "food"
-						}
+				
+				let food = calculateFood(i, j);
+				if (food > 130) {
+					grid[i][j] = { 
+						letter: "X",
+						age: food * 0.9, 
+						color: color(128, 128, 128),
+						class: "food"
 					}
 				}
+				
 			}
 		}
 		
 	}
 
-	if (random() * 100000 > 99900)
+	if (random() * 10000 > 9900)
 	{
 		random_vkd()
 	}
