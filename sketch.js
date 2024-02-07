@@ -9,7 +9,7 @@ let lastVKDframeCount = vkdPeriod
 let frameCount = 0;
 
 let direction = false
-let string = "VAN KLEEF-DIEBEN"
+let string = "###-##-###"
 let font = "iA Writer Mono"
 
 const dX = 15
@@ -34,7 +34,13 @@ function setup() {
 		grid[i] = []
 		for (let j = 0; j < sizeY; j++) 
 		{
-			grid[i][j] = { letter: null, age: 0, class: null }
+			grid[i][j] = 
+			{ 
+				letter: null, 
+				age: 0, 
+				class: null, 
+				q_age : 0 
+			}
 		}
 	}
 
@@ -71,7 +77,8 @@ function vkd(x, y)
 			letter: s[i], 
 			age: maxAge * 1.2, 
 			color: color("black"), 
-			class: "source" 
+			class: "source",
+			q_age: 0
 		}
 
 		if (direction)
@@ -83,7 +90,6 @@ function vkd(x, y)
 		{
 			grid[x][y + i] = point
 		}
-
 		
 	}
 }
@@ -115,74 +121,17 @@ function random_vkd()
 
 }
 
-function getNeighbors(x, y, r)
-{
-	let neighbors = []
-	for (let i = - r ; i < r; i++) 
-	{
-		for (let j = - r ; j < r + 1; j++) 
-		{
-			if (x + i < 0 || x + i >= sizeX || y + j < 0 || y + j >= sizeY)
-			{
-				continue;
-			}
-
-			if ((i * i) + (j * j) > r * r)
-			{
-				continue
-			}
-
-			let point = grid[x + i][y + j]
-
-			if (point.letter !== null)
-			{
-				// if (point.class === "source" && point.age > maxAge * 0.8)
-				// {
-				// 	continue;
-				// }
-				
-				neighbors.push(point)
-			}
-		} 
-	}
-
-	return neighbors;
-}
-
-function calculateFood(x, y)
-{
-	let neighbors = getNeighbors(x, y, 3);
-
-	if (neighbors.length === 0)
-	{
-		return 0
-	}
-
-	let food = neighbors.reduce((total, neighbor) => { 
-		if (neighbor.class === "source")
-		{
-			return total + ((neighbor.age > maxAge) * 0.9 ? 0 : (neighbor.age / 0.9))
-		}
-		return total + neighbor.age //(neighbor.class === "source" ? maxAge : neighbor.age)
-	}, 0)
-
-	return food / neighbors.length
-}
-
-
-
 function draw() {
 
 	frameCount++
 	
 	clear()
+	background(255)
 
 	if (lastVKDframeCount + vkdPeriod < frameCount)
 	{
 		random_vkd()
 	}
-
-
 				
 	for (let i = 0; i < sizeX; i++) 
 	{
@@ -191,33 +140,26 @@ function draw() {
 
 			let point = grid[i][j]
 
-			// if (frameCount % 30 === 0)
-			// {
-			//point.age--
-			// }
-			
-
-			if (point.age < 10)
+			if (point.age < 15)
 			{
-				point.letter = null
-				point.class = null
 				point.age = 0
+				point.q_age = 0
 			}
 
 			if (point.class === "source")
 			{
 				// if (frameCount % 30 === 0)
 				// {
-				point.age *= 0.9995 
+				point.age *= 0.9
 
 				if (random(100) > 90)
 				{
-					point.age *= 0.99
+					point.age *= 0.9
 				}
 				// }
 
 				if (point.age < maxAge * 0.5){
-					point.age *= 0.95
+					point.age *= 0.9
 				}
 				
 
@@ -238,57 +180,92 @@ function draw() {
 				
 			}
 
-			if (point.class === "food")
+			else if (point.age > 0)
 			{
 				//if (frameCount % 5 === 0)
-				{
-					point.age *= 0.9999
-				}
-
-
+				// {
+				point.age *= 0.95
+				// }
 			
-
 				let chars = [ "░",  "▒", "▓",  "█" ]
 				let index = min(point.age / maxAge * chars.length | 0, chars.length - 1)
 				point.output = chars[index]
 
 				
 			}
-			let c = point.color || color(255)
-			c.setAlpha(min(point.age, 255))
+			let c = color(0)
+			// c.setAlpha(min(point.age, 255))
 			fill(c)
 			
 			text(point.output || "", i * dX, j * dY)
+
 			
-			if (point.class !== "source") 
-			{				
+			
+			// if (point.class !== "source") 
+			// {				
 				
-				let food = calculateFood(i, j);
-				// console.log(food)
+			// 	//let food = calculateFood(i, j);
+			// 	// console.log(food)
 
-				// if (random(1000) < 999 - food / 30) 
-				// {
-				// 	//continue;
-				// }
+			// 	// if (random(1000) < 999 - food / 30) 
+			// 	// {
+			// 	// 	//continue;
+			// 	// }
 
-				if (food > 0 ) {
-					point.letter = "█"	
-					point.class = "food"
-					point.color = color(150, 100, 100)
+			// 	if (food > 0 ) {
+			// 		point.letter = "█"	
+			// 		point.class = "food"
+			// 		point.color = color(150, 100, 100)
 
-					{
-						point.age = min(maxAge, (point.age * 2 + food)/  3 )
-					}
+			// 		{
+			// 			point.age = min(maxAge, (point.age * 2 + food)/  3 )
+			// 		}
 
 					
 				
-				}
+			// 	}
 			//}
 
-		}
+		
 			
 		}
 		
+	}
+
+	for (let i = 0; i < sizeX; i++) 
+	{
+		for (let j = 0; j < sizeY; j++) 
+		{
+			let point = grid[i][j]
+			// if (point.age !== 0)
+			{
+				for (let a of [-1, 1 ])
+				{
+					if (i + a >= 0 && i + a < sizeX)
+					{
+						grid[i + a][j].q_age += 0.15 * point.age
+					}
+										
+					if (j + a >= 0 && j + a < sizeY)
+					{
+						grid[i][j + a].q_age += 0.15 * point.age
+					}
+					
+					point.age *= 0.8
+				}
+			}
+			
+		}
+	}
+
+	for (let i = 0; i < sizeX; i++) 
+	{
+		for (let j = 0; j < sizeY; j++) 
+		{
+			let point = grid[i][j]
+			point.age += point.q_age 
+			point.q_age = 0
+		}
 	}
 
 
