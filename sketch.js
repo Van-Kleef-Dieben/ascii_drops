@@ -4,6 +4,10 @@ let sizeX
 let sizeY
 let maxAge = 256
 
+let vkdPeriod = 300
+let lastVKDframeCount = vkdPeriod
+let frameCount = 0;
+
 let direction = false
 let string = "VAN KLEEF-DIEBEN"
 let font = "iA Writer Mono"
@@ -63,14 +67,21 @@ function vkd(x, y)
 			continue
 		}
 
+		let point = { 
+			letter: s[i], 
+			age: maxAge * 1.2, 
+			color: color("black"), 
+			class: "source" 
+		}
+
 		if (direction)
 		{
-			grid[x + i][y] = { letter: s[i], age: maxAge, color: color("#444"), count: 4, class: "source" }
+			grid[x + i][y] = point
 		
 		}
 		else
 		{
-			grid[x][y + i] = { letter: s[i], age: maxAge, color: color("#444"), count: 4, class: "source" }
+			grid[x][y + i] = point
 		}
 
 		
@@ -79,6 +90,8 @@ function vkd(x, y)
 
 function random_vkd() 
 {
+	lastVKDframeCount = frameCount
+
 	let x
 	let y
 
@@ -105,9 +118,9 @@ function random_vkd()
 function getNeighbors(x, y, r)
 {
 	let neighbors = []
-	for (let i = - r ; i < r + 1; i++) 
+	for (let i = - r ; i < r; i++) 
 	{
-		for (let j = - r; j < r + 1; j++) 
+		for (let j = - r ; j < r + 1; j++) 
 		{
 			if (x + i < 0 || x + i >= sizeX || y + j < 0 || y + j >= sizeY)
 			{
@@ -123,10 +136,10 @@ function getNeighbors(x, y, r)
 
 			if (point.letter !== null)
 			{
-				if (point.class === "source" && point.age > maxAge * 0.9)
-				{
-					continue;
-				}
+				// if (point.class === "source" && point.age > maxAge * 0.8)
+				// {
+				// 	continue;
+				// }
 				
 				neighbors.push(point)
 			}
@@ -145,18 +158,30 @@ function calculateFood(x, y)
 		return 0
 	}
 
-	let food = neighbors.reduce((total, neighbor) => { return max(total, neighbor.age) }, 0)
+	let food = neighbors.reduce((total, neighbor) => { 
+		if (neighbor.class === "source")
+		{
+			return total + ((neighbor.age > maxAge) * 0.9 ? 0 : (neighbor.age / 0.9))
+		}
+		return total + neighbor.age //(neighbor.class === "source" ? maxAge : neighbor.age)
+	}, 0)
 
-	return food
+	return food / neighbors.length
 }
 
-let frameCount = 0;
+
 
 function draw() {
 
 	frameCount++
 	
 	clear()
+
+	if (lastVKDframeCount + vkdPeriod < frameCount)
+	{
+		random_vkd()
+	}
+
 
 				
 	for (let i = 0; i < sizeX; i++) 
@@ -168,71 +193,94 @@ function draw() {
 
 			// if (frameCount % 30 === 0)
 			// {
-			point.age--
+			//point.age--
 			// }
 			
 
-			if (point.age < 0)
+			if (point.age < 10)
 			{
 				point.letter = null
 				point.class = null
+				point.age = 0
 			}
 
 			if (point.class === "source")
 			{
 				// if (frameCount % 30 === 0)
 				// {
-				point.age -= random() * 4
+				point.age *= 0.9995 
+
+				if (random(100) > 90)
+				{
+					point.age *= 0.99
+				}
 				// }
 
-				if (point.age < maxAge * 0.4)
-				{
-					point.age -= 3
+				if (point.age < maxAge * 0.5){
+					point.age *= 0.95
 				}
+				
 
-				if (point.age > maxAge * 0.9 || point.age < maxAge * 0.4)
+				if (point.age >= maxAge || point.age < maxAge * 0.5)
 				{
-					chars =[ ":", "."]
+					chars =[ ":", ".", ""]
 					
 					if (random() * 20 > 15) 
 					{
 						point.output = chars[random() * chars.length | 0]
 					}					
 				}
-				else {
+				else 
+				{
 					point.output = point.letter
 				}
+
+				
 			}
 
 			if (point.class === "food")
 			{
-				let chars = [ "░",  "▒", "▓",  "█" ]
-				let index = min(1.3 * point.age / maxAge * chars.length | 0, chars.length - 1)
-				point.output = chars[index]
-			}
+				//if (frameCount % 5 === 0)
+				{
+					point.age *= 0.9999
+				}
 
+
+			
+
+				let chars = [ "░",  "▒", "▓",  "█" ]
+				let index = min(point.age / maxAge * chars.length | 0, chars.length - 1)
+				point.output = chars[index]
+
+				
+			}
 			let c = point.color || color(255)
-			c.setAlpha(point.age)
+			c.setAlpha(min(point.age, 255))
 			fill(c)
+			
 			text(point.output || "", i * dX, j * dY)
 			
 			if (point.class !== "source") 
 			{				
-
 				
 				let food = calculateFood(i, j);
 				// console.log(food)
 
-				if (random(1000) < 999 - food / 30) 
-				{
-					//continue;
-				}
+				// if (random(1000) < 999 - food / 30) 
+				// {
+				// 	//continue;
+				// }
 
-				if (food !== 0 ) {
+				if (food > 0 ) {
 					point.letter = "█"	
 					point.class = "food"
-					point.color = color(128, 128, 128)
-					point.age = min(maxAge - 1, max(point.age, food * 0.8 * random(0.8, 1.0)))
+					point.color = color(100, 100, 100)
+
+					{
+						point.age = min(maxAge, (point.age * 2 + food)/  3 )
+					}
+
+					
 				
 				}
 			//}
@@ -243,12 +291,8 @@ function draw() {
 		
 	}
 
-	if (random() * 10000 > 9900)
-	{
-		random_vkd()
-	}
 
 
-	fill("red")
-	text(frameCount, 100, 0)
+	// fill("red")
+	// text(frameCount, 100, 0)
 }
