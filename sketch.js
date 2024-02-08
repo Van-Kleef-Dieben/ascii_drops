@@ -12,12 +12,33 @@ let direction = false
 let string = "###-##-###"
 let font = "iA Writer Mono"
 
+// let f = 100;
+// let myNumberMin = 0;
+// let myNumberMax = 1000;
+// let myNumberStep = 10;
+
+let gui;
+
 const dX = 15
+
 const dY = 23
 
-const fp = 0.01
+let fp = 0.02
+let df = 20
+let dv = 5000
+let vp = 0.01
+let chars = " .:-=+#▓▒░█"
 
 function setup() {
+
+	var qs = QuickSettings.create(10, 10, "Rain drops", document.querySelector("body")[0]);
+	qs.addRange("flow", 0, 0.5, fp, 0.01, (e) => { fp = e})
+	qs.addRange("drop frequency", 1, 300, df, 1, (e) => { df = e})
+	qs.addRange("drop volume", 1, 15000, dv, 1, (e) => { dv = e})
+	qs.addRange("vaporization", 0, 0.1, vp, 0.001, (e) => { vp = e})
+	qs.addText("ASCII chars", chars, (e) => { chars = e });        
+
+
 
 	let w = displayWidth
 	let h = 400
@@ -44,20 +65,24 @@ function setup() {
 		}
 	}
 
+	
+
+	// noLoop()
+
 	// vkd((sizeX / 2 - string.length / 2)| 0, sizeY / 2 | 0 )
 }
 
-function mouseClicked()
+function addDrop()
 {
-	let x = mouseX / dX | 0
-	let y = mouseY / dY | 0
+	let x = random(sizeX) | 0
+	let y = random(sizeY) | 0
 
 	if (x >= sizeX || y >= sizeY)
 	{
 		return;
 	}
 
-	grid[x][y].amount = 4300
+	grid[x][y].amount = dv
 }
 
 function updateGrid()
@@ -99,7 +124,7 @@ function updateGrid()
 		for (let j = 0; j < sizeY; j++) 
 		{
 			let p = grid[i][j]
-			p.amount = p._amount
+			p.amount = p._amount * (1 - vp)
 			p._amount = 0
 		}
 	}
@@ -113,7 +138,7 @@ function drawGrid()
 		{
 			let p = grid[i][j]
 
-			const chars = [ "", ".", "░",  "▒", "▓",  "█" ]
+			// const chars =  " .:-=+#▓▒░█"
 			const index = min((p.amount / maxAge * chars.length) | 0, chars.length - 1)
 			
 			textAlign("left, top")
@@ -128,6 +153,12 @@ function draw()
 {
 
 	frameCount++
+
+	if ((frameCount + (random(20) | 0)) % df === 0)
+	{
+		addDrop()
+	}
+
 
 	clear()
 	background(255)
