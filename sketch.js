@@ -2,7 +2,6 @@
 let grid = []
 let sizeX
 let sizeY
-let maxAge = 256
 
 let vkdPeriod = 300
 let lastVKDframeCount = vkdPeriod
@@ -28,6 +27,8 @@ let df = 20
 let dv = 5000
 let vp = 0.01
 let chars = " .:-=+#▓▒░█"
+let c = "#222"
+let o = false
 
 function setup() {
 
@@ -36,7 +37,9 @@ function setup() {
 	qs.addRange("drop frequency", 1, 300, df, 1, (e) => { df = e})
 	qs.addRange("drop volume", 1, 15000, dv, 1, (e) => { dv = e})
 	qs.addRange("vaporization", 0, 0.1, vp, 0.001, (e) => { vp = e})
-	qs.addText("ASCII chars", chars, (e) => { chars = e });        
+	qs.addText("ASCII chars", chars, (e) => { chars = e });    
+	qs.addColor("color", c, e => { console.log(e); c = color(e) });                  // creates a color input    
+	qs.addBoolean("opacity", o, e => o = e)
 
 
 
@@ -45,7 +48,7 @@ function setup() {
 
 	createCanvas(w, h);
 	textFont(font)
-	textStyle("bold")
+	// textStyle("bold")
 	textSize(20)
 	textAlign(CENTER, TOP)
 
@@ -64,12 +67,6 @@ function setup() {
 			}
 		}
 	}
-
-	
-
-	// noLoop()
-
-	// vkd((sizeX / 2 - string.length / 2)| 0, sizeY / 2 | 0 )
 }
 
 function addDrop()
@@ -138,12 +135,21 @@ function drawGrid()
 		{
 			let p = grid[i][j]
 
-			// const chars =  " .:-=+#▓▒░█"
-			const index = min((p.amount / maxAge * chars.length) | 0, chars.length - 1)
+			const index = min((p.amount / 256 * chars.length) | 0, chars.length - 1)
 			
 			textAlign("left, top")
-			const c = color("black")
-			fill(c)
+			
+
+			if (o)
+			{
+				let cc = color(c)
+				cc.setAlpha(min(p.amount, 256))
+				fill(cc)
+			} 
+			else
+			{
+				fill(c)
+			}
 			text(chars[index], i * dX, j * dY)
 		}
 	}
@@ -158,7 +164,6 @@ function draw()
 	{
 		addDrop()
 	}
-
 
 	clear()
 	background(255)
