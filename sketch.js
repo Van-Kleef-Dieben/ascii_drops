@@ -139,17 +139,9 @@ function drawGrid()
 			
 			textAlign("left, top")
 			
-
-			if (o)
-			{
-				let cc = color(c)
-				cc.setAlpha(min(p.amount, 256))
-				fill(cc)
-			} 
-			else
-			{
-				fill(c)
-			}
+			let cc = color(c)
+			cc.setAlpha(o ? min(p.amount, 255) : 255)
+			fill(cc)
 			text(chars[index], i * dX, j * dY)
 		}
 	}
