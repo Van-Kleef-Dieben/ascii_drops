@@ -43,8 +43,8 @@ function setup() {
 
 
 
-	let w = displayWidth
-	let h = 400
+	let w = 800
+	let h = 800
 
 	createCanvas(w, h);
 	textFont(font)
